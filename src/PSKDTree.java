@@ -199,7 +199,7 @@ public class PSKDTree<Value> implements PointSearch<Value> {
     public Point nearest(Point p) {
         return nearest(p,1).iterator().next();
     }
-
+    /* Non-recursive version
     private void goDown(Node rootNode,
                         Point p,
                         Stack<Node> childStack,
@@ -225,6 +225,28 @@ public class PSKDTree<Value> implements PointSearch<Value> {
                 }
                 tmp = tmp.right;
             }
+        }
+    }
+    */
+    // Recursive version
+    private void goDown(Node rootNode,
+                        Point p,
+                        Stack<Node> childStack,
+                        Stack<Node> parentStack,
+                        MaxPQ<PointDist> nearestPoints,
+                        int k) {
+        if (rootNode == null) return;
+        nearestPoints.insert(new PointDist(rootNode.p, rootNode.p.dist(p))); // record the current distance
+        if(nearestPoints.size() > k) nearestPoints.delMax();
+        if(p.xy(rootNode.dir) < rootNode.p.xy(rootNode.dir)) {
+            parentStack.push(rootNode);
+            childStack.push(rootNode.right);
+            goDown(rootNode.left, p, childStack, parentStack, nearestPoints, k);
+        }
+        else {
+            parentStack.push(rootNode);
+            childStack.push(rootNode.left);
+            goDown(rootNode.right, p, childStack, parentStack, nearestPoints, k);
         }
     }
     // return the k nearest Points to the given Point
