@@ -1,7 +1,9 @@
 import com.sun.javafx.scene.traversal.Direction;
 import com.sun.javaws.exceptions.InvalidArgumentException;
 
+import java.io.File;
 import java.util.Iterator;
+import java.util.Scanner;
 import java.util.Stack;
 
 /**
@@ -10,10 +12,10 @@ import java.util.Stack;
  */
 public class PSKDTree<Value> implements PointSearch<Value> {
     private class Node {
-        Point p;
-        Value v;
-        Node left, right;
-        Partition.Direction dir;
+        Point p; // 24 bytes
+        Value v; // 8 bytes
+        Node left, right; // 16 bytes
+        Partition.Direction dir; // 16 bytes (subclass, ask later)
         // a constructor
         public Node(Point pt,
                     Value vl,
@@ -27,7 +29,7 @@ public class PSKDTree<Value> implements PointSearch<Value> {
             right = r;
             dir = d;
         }
-    }
+    } // 16 bytes of overhead (subclass, ask later)
     // the root node of the BST.
     // (We are not using data structure provided by libraries.)
     private Node root;
@@ -92,8 +94,11 @@ public class PSKDTree<Value> implements PointSearch<Value> {
     {
         // We need to ask Dr. Denning how to deal with exact same points
         // But I think we shouldn't allow exact same points, because calling get() on that point will never return some points.
-        if (p.compareTo(rootNode.p) == 0) throw new java.lang.IllegalArgumentException("Point " + p.toString() + " already exists");
-
+        if (p.compareTo(rootNode.p) == 0) {
+            //  throw new java.lang.IllegalArgumentException("Point " + p.toString() + " already exists");
+            rootNode.v = v; // update the point to current value and exit
+            return;
+        }
         Partition.Direction currentDirection = rootNode.dir; // the direction
         if (p.xy(currentDirection) < rootNode.p.xy(currentDirection)) {
             // if the point inserted is less than rootNode....
@@ -195,20 +200,25 @@ public class PSKDTree<Value> implements PointSearch<Value> {
         return nearest(p,1).iterator().next();
     }
 
-    private void goDown(Node rootNode, Point p, Stack<Node> childStack, Stack<Node> parentStack, MaxPQ<PointDist> nearestPoints, int k){
+    private void goDown(Node rootNode,
+                        Point p,
+                        Stack<Node> childStack,
+                        Stack<Node> parentStack,
+                        MaxPQ<PointDist> nearestPoints,
+                        int k) {
         Node tmp = rootNode;
         while(true) {
             if(tmp == null) break;
             nearestPoints.insert(new PointDist(tmp.p, tmp.p.dist(p)));
             if(nearestPoints.size() > k) nearestPoints.delMax();
-            if(p.xy(tmp.dir) < tmp.p.xy(tmp.dir)){
+            if(p.xy(tmp.dir) < tmp.p.xy(tmp.dir)) {
                 if(tmp.right != null) {
                     parentStack.push(tmp);
                     childStack.push(tmp.right);
                 }
                 tmp = tmp.left;
             }
-            else{
+            else {
                 if(tmp.left != null) {
                     parentStack.push(tmp);
                     childStack.push(tmp.left);
@@ -251,13 +261,31 @@ public class PSKDTree<Value> implements PointSearch<Value> {
     // return whether the kD-tree is empty
     public boolean isEmpty() { return root == null; }
 
+    public static void insertPoints(String filename, PointSearch<Integer> ps) {
+        In in = new In(filename);
+        while (!in.isEmpty()) {
+            double x = in.readDouble();
+            double y = in.readDouble();
+            ps.put(new Point(x,y), 1);
+        }
+    }
     // place your timing code or unit testing here
     public static void main(String[] args) {
-        PSKDTree<Integer> test = new PSKDTree<>();
-        test.put(new Point(1,3), 1);
-        test.put(new Point(1,4), 5);
-        test.put(new Point(1,5), 16);
-        test.printValues();
+        //PSKDTree<Integer> test = new PSKDTree<>();
+        PSBruteForce<Integer> test = new PSBruteForce<>();
+        String filename = args[0];
+        insertPoints(filename, test);
+        int count = 0; // count how many nearest point search has been done
+        int limit = 10000;
+        double startTime = System.nanoTime();
+        while (count < limit) {
+            test.nearest(Point.uniform());
+            count++;
+        }
+        double endTime = System.nanoTime();
+        double difference = (endTime-startTime)/1000000000;
+        System.out.format("Took %f seconds to conduct %d searches\n",difference, limit);
+        System.out.format("Average: %d searches / second\n", Math.round(limit/difference));
 
 
     }
