@@ -1,4 +1,5 @@
 import java.util.Iterator;
+import java.util.Stack;
 
 /**
  * PSKDTree is a Point collection that provides nearest neighbor searching using
@@ -170,12 +171,51 @@ public class PSKDTree<Value> implements PointSearch<Value> {
 
     // return the Point that is closest to the given Point
     public Point nearest(Point p) {
+        Stack<Node> backPoints = new Stack<>();
+
         return null;
     }
 
+    private void goDown(Node rootNode, Point p, Stack<Node> childStack, Stack<Node> parentStack, MaxPQ<PointDist> nearestPoints, int k){
+        Node tmp = rootNode;
+        while(true) {
+            if(tmp == null) break;
+            nearestPoints.insert(new PointDist(tmp.p, tmp.p.dist(p)));
+            if(nearestPoints.size() > k) nearestPoints.delMax();
+            if(p.xy(tmp.dir) < tmp.p.xy(tmp.dir)){
+                if(tmp.right != null) {
+                    parentStack.push(tmp);
+                    childStack.push(tmp.right);
+                }
+                tmp = tmp.left;
+            }
+            else{
+                if(tmp.left != null) {
+                    parentStack.push(tmp);
+                    childStack.push(tmp.left);
+                }
+                tmp = tmp.right;
+            }
+        }
+    }
     // return the k nearest Points to the given Point
     public Iterable<Point> nearest(Point p, int k) {
-        return null;
+        Stack<Node> backPoints = new Stack<>();
+        Stack<Node> parentPoints = new Stack<>();
+        MaxPQ<PointDist> nearestPoints = new MaxPQ<>();
+        goDown(root, p, backPoints, parentPoints, nearestPoints, k);
+        Node tmp, tmpParent;
+        while(!backPoints.isEmpty()){
+            tmp = backPoints.pop();
+            tmpParent = parentPoints.pop();
+            if(Math.abs(tmpParent.p.xy(tmpParent.dir) - p.xy(tmpParent.dir)) < nearestPoints.max().d()){
+                goDown(tmp, p, backPoints, parentPoints, nearestPoints, k);
+            }
+        }
+        Stack<Point> toReturn = new Stack<>();
+        for(PointDist pd: nearestPoints)
+            toReturn.push(pd.p());
+        return toReturn;
     }
 
     // return the min and max for all Points in collection.
