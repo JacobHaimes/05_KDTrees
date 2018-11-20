@@ -65,9 +65,9 @@ Use tilde notation to simplify your answer (i.e., keep the leading coefficient a
 Include the memory for all referenced objects (including `Node` and `Point` objects) except for `Value` objects (because the type is unknown and the object is owned by the client).
 Also, include the memory for all referenced objects, including any references to the `Direction` enum.
 
-bytes per `Point`:
+bytes per `Point`: 24
 
-bytes per `PSKDTree` of $N$ points: $\sim N$
+bytes per `PSKDTree` of $N$ points: $\sim 80 N$
 
 <!-- Details and screenshots here -->
 
@@ -80,8 +80,8 @@ Repeat the question but with the 2d tree implementation.
 
 file            | brute force | 2d tree
 ----------------|-------------|---------
-`input100K.txt` |         $0$ |     $0$
-`input1M.txt`   |         $0$ |     $0$
+`input100K.txt` |       $590$ | $104541$
+`input1M.txt`   |        $21$ |  $95001$
 
 <!-- Details and screenshots here -->
 
