@@ -1,3 +1,6 @@
+import com.sun.javafx.scene.traversal.Direction;
+import com.sun.javaws.exceptions.InvalidArgumentException;
+
 import java.util.Iterator;
 import java.util.Stack;
 
@@ -164,16 +167,32 @@ public class PSKDTree<Value> implements PointSearch<Value> {
         return iterable;
     }
 
+
+    private void addPartition(Node n, Stack<Partition> partitionStack, Point localMin, Point localMax) {
+        if (n == null) return;
+        Point newMin, newMax;
+        if (n.dir == Partition.Direction.LEFTRIGHT) {
+            newMin = new Point(n.p.x(), localMin.y());
+            newMax = new Point(n.p.x(), localMax.y());
+        }
+        else {
+            newMin = new Point(localMin.x(), n.p.y());
+            newMax = new Point(localMax.x(), n.p.y());
+        }
+        partitionStack.push(new Partition(newMin, newMax, n.dir));
+        addPartition(n.left, partitionStack, localMin, newMax);
+        addPartition(n.right, partitionStack, newMin, localMax);
+    }
     // return an iterable of all partitions that make up the kD-tree
     public Iterable<Partition> partitions() {
-        return null;
+        Stack<Partition> toReturn = new Stack<>();
+        addPartition(root, toReturn, min, max);
+        return toReturn;
     }
 
     // return the Point that is closest to the given Point
     public Point nearest(Point p) {
-        Stack<Node> backPoints = new Stack<>();
-
-        return null;
+        return nearest(p,1).iterator().next();
     }
 
     private void goDown(Node rootNode, Point p, Stack<Node> childStack, Stack<Node> parentStack, MaxPQ<PointDist> nearestPoints, int k){
@@ -200,6 +219,8 @@ public class PSKDTree<Value> implements PointSearch<Value> {
     }
     // return the k nearest Points to the given Point
     public Iterable<Point> nearest(Point p, int k) {
+        if (k<0) throw new IllegalArgumentException("K can't be a negative value");
+        if (k==0) return new Stack<>();
         Stack<Node> backPoints = new Stack<>();
         Stack<Node> parentPoints = new Stack<>();
         MaxPQ<PointDist> nearestPoints = new MaxPQ<>();
