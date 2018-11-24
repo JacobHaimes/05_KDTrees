@@ -30,19 +30,19 @@ If helpful, use folders to divide up the subparts of your submission.
 Student Info
 =============
 
-Your name:
+Your name: David Deng, Jacob Haimes
 
-Operating system:
+Operating system: Linux, Windows
 
-Lab computer or your own computer:
+Lab computer or your own computer: Both
 
-Approx hours to complete assignment:
+Approx hours to complete assignment: 10 hours
 
-Partner's name (if applicable):
+Partner's name (if applicable): Listed above
 
-TA's or Tutor's name (if received help):
+TA's or Tutor's name (if received help): Dr. Denning
 
-Did you receive help from your instructor?
+Did you receive help from your instructor? Yes.
 
 
 
@@ -52,10 +52,20 @@ Assignment Details
 
 Describe the `Node` data type you used to implement the 2d tree data structure.
 
+It includes a point, representing its position on the board;
+includes a value, which is arbitrary information to associated with the point;
+includes two node references pointing to its left and right children;
+includes a Direction object, representing the direction of partition at this point. 
 <!-- Details and screenshots here -->
 
 
 Describe your method for nearest neighbor search in a kd tree.
+
+Search from the top of the tree, store the distance and point to a MaxPQ, and go to the side with the query point, push the other side onto a stack.
+Do the same thing for the child node, until reached bottom of the tree.
+Pop nodes from stack, check if it's possible to have nearer points under that node, if so, go down from that node, store distance/points and push node to stack if necessary.
+Do the same thing until stack is empty.
+At the end, the maxPQ should contain closest points.
 
 <!-- Details and screenshots here -->
 
@@ -65,9 +75,19 @@ Use tilde notation to simplify your answer (i.e., keep the leading coefficient a
 Include the memory for all referenced objects (including `Node` and `Point` objects) except for `Value` objects (because the type is unknown and the object is owned by the client).
 Also, include the memory for all referenced objects, including any references to the `Direction` enum.
 
-bytes per `Point`: 24
+bytes per `Point`: 32 (8 for x, 8 for y, 16 overhead)
 
-bytes per `PSKDTree` of $N$ points: $\sim 80 N$
+bytes per `PSKDTree` of $N$ points: $\sim 96 N$
+
+Items in node | memory usage
+-----|------
+Header | 24
+Point| 32 + 8
+Value| 8
+left| 8
+right| 8
+Partition.Direction| 8
+
 
 <!-- Details and screenshots here -->
 
@@ -90,6 +110,7 @@ file            | brute force | 2d tree
 Known bugs / limitations
 -------------------------
 
+Nope.
 <!-- Details and screenshots here -->
 
 
@@ -99,12 +120,16 @@ Reflection
 Describe whatever help (if any) that you received.
 Don't include readings, lectures, but do include any help from people (including course staff, lab TAs, classmates, and friends)  and attribute them by name.
 
+Dr. Denning, idea from partner.
+
 <!-- Details and screenshots here -->
 
 
 Since this is an individual assignment, if you worked with a partner, assert below that the work you are turning in is your own work, and that you only did "whiteboard" work as a group.
 Give one sentence explaining what each of you contributed.
 If you used the code from the lab challenge, explain what is shared between you and your lab partner.
+
+Jacob typed most of the times, while illustrating scenarios on the whiteboard; David set up git workflow, while coming up with algorithms.
 
 <!-- Details and screenshots here -->
 
@@ -119,9 +144,6 @@ List any other comments here.
 Feel free to provide any feedback on how much you learned from doing the assignment, and whether you enjoyed doing it.
 
 <!-- Details and screenshots here -->
-
-
-
 
 
 <!--
